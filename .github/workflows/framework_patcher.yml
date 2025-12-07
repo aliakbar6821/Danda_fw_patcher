@@ -11,7 +11,7 @@ jobs:
     - name: Install Required Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
+        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl zipalign
 
         # Install Android Build-Tools (for zipalign & apksigner)
         sudo mkdir -p /usr/lib/android-sdk
