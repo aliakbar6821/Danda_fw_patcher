@@ -8,19 +8,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
     - name: Install Required Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl zipalign
+        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
 
-        # Install Android Build-Tools (for zipalign & apksigner)
-        sudo mkdir -p /usr/lib/android-sdk
-        cd /usr/lib/android-sdk
-        sudo curl -L -o build-tools.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
-        sudo unzip build-tools.zip -d build-tools
-        sudo mv build-tools /usr/lib/android-sdk/build-tools-33
-        sudo ln -s /usr/lib/android-sdk/build-tools-33/zipalign /usr/local/bin/zipalign
-        sudo ln -s /usr/lib/android-sdk/build-tools-33/apksigner /usr/local/bin/apksigner
+        # Install Android Build-Tools (includes zipalign & apksigner)
+        mkdir -p $HOME/android-build-tools
+        cd $HOME/android-build-tools
+        curl -L -o bt.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
+        unzip bt.zip
+
+        # Add zipalign + apksigner to PATH permanently for this job
+        echo "$HOME/android-build-tools/android-13/build-tools/33.0.2" >> $GITHUB_PATH
+
+    - name: Verify zipalign
+      run: |
+        which zipalign
+        zipalign -h
 
     - name: Clone Patcher Repo
       run: |
@@ -36,10 +42,8 @@ jobs:
         cd OemPorts10T-PIF/framework_patcher
 
         chmod +x patchframework.sh
-        # Save output to output.txt
         ./patchframework.sh | tee output.txt
 
-        # If for.sh exists, run it and save output too
         if [ -f for.sh ]; then
           chmod +x for.sh
           ./for.sh | tee -a output.txt
