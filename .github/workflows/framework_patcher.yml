@@ -8,17 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout (empty workspace)
-      uses: actions/checkout@v4
-      with:
-        repository: ""
-
     - name: Install Required Packages
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
 
-        # Install Android Build-Tools 33
+        # Install Android Build-Tools (for zipalign & apksigner)
         sudo mkdir -p /usr/lib/android-sdk
         cd /usr/lib/android-sdk
         sudo curl -L -o build-tools.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
@@ -30,30 +25,32 @@ jobs:
     - name: Clone Patcher Repo
       run: |
         git clone https://github.com/Danda420/OemPorts10T-PIF
-        cd OemPorts10T-PIF
 
     - name: Download framework.jar
       run: |
         cd OemPorts10T-PIF/framework_patcher
         curl -L -o framework.jar "https://pixeldrain.com/u/J5SEVhfY"
 
-    - name: Run Framework Patch
+    - name: Run Framework Patcher and Save output.txt
       run: |
         cd OemPorts10T-PIF/framework_patcher
-        chmod +x patchframework.sh
-        ./patchframework.sh || true
 
+        chmod +x patchframework.sh
+        # Save output to output.txt
+        ./patchframework.sh | tee output.txt
+
+        # If for.sh exists, run it and save output too
         if [ -f for.sh ]; then
           chmod +x for.sh
-          ./for.sh || true
+          ./for.sh | tee -a output.txt
         fi
 
-    - name: Create ZIP of Framework Patcher
+    - name: Create ZIP of framework_patcher
       run: |
         cd OemPorts10T-PIF
         zip -r framework.zip framework_patcher
 
-    - name: Upload to Pixeldrain
+    - name: Upload ZIP to Pixeldrain
       run: |
         cd OemPorts10T-PIF
         curl -T "framework.zip" -u :870d0ec5-6f6e-486d-9a3a-1707d803248f https://pixeldrain.com/api/file/
