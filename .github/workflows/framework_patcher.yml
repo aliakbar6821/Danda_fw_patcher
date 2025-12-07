@@ -9,7 +9,7 @@ jobs:
 
     steps:
 
-        - name: Install Required Packages
+    - name: Install Required Packages
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
@@ -20,20 +20,18 @@ jobs:
         curl -L -o bt.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
         unzip bt.zip
 
-        # DEBUG LIST – see extracted structure
         echo "Extracted folders:"
         ls -R .
 
-        # Find the actual zipalign path automatically
+        # Find zipalign automatically
         ZIPALIGN_PATH=$(find $HOME/android-build-tools -type f -name zipalign | head -n 1)
         ZIPALIGN_DIR=$(dirname "$ZIPALIGN_PATH")
 
         echo "zipalign found at: $ZIPALIGN_PATH"
         echo "Adding to PATH: $ZIPALIGN_DIR"
 
-        # Add to PATH for all next steps
+        # Add to PATH for next steps
         echo "$ZIPALIGN_DIR" >> $GITHUB_PATH
-
 
     - name: Clone Patcher Repo
       run: |
@@ -56,7 +54,7 @@ jobs:
           ./for.sh | tee -a output.txt
         fi
 
-    - name: Create ZIP of framework_patcher
+    - name: Create ZIP of patcher
       run: |
         cd OemPorts10T-PIF
         zip -r framework.zip framework_patcher
