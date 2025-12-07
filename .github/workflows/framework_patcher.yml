@@ -1,0 +1,50 @@
+name: Framework Patcher Builder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout (empty workspace)
+      uses: actions/checkout@v4
+      with:
+        repository: ""
+
+    - name: Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
+
+    - name: Clone Patcher Repo
+      run: |
+        git clone https://github.com/Danda420/OemPorts10T-PIF
+        cd OemPorts10T-PIF
+
+    - name: Download framework.jar
+      run: |
+        cd OemPorts10T-PIF/framework_patcher
+        curl -L -o framework.jar "https://pixeldrain.com/u/J5SEVhfY"
+
+    - name: Run Framework Patch
+      run: |
+        cd OemPorts10T-PIF/framework_patcher
+        chmod +x patchframework.sh
+        ./patchframework.sh || true
+
+        if [ -f for.sh ]; then
+          chmod +x for.sh
+          ./for.sh || true
+        fi
+
+    - name: Create ZIP of Framework Patcher
+      run: |
+        cd OemPorts10T-PIF
+        zip -r framework.zip framework_patcher
+
+    - name: Upload to Pixeldrain
+      run: |
+        cd OemPorts10T-PIF
+        curl -T "framework.zip" -u :870d0ec5-6f6e-486d-9a3a-1707d803248f https://pixeldrain.com/api/file/
