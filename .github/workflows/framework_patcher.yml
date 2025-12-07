@@ -8,58 +8,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-    - name: Install Required Packages
+    - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
+        sudo apt-get install -y openjdk-17-jre zip unzip curl
 
-        # Install Android Build-Tools
-        mkdir -p $HOME/android-build-tools
-        cd $HOME/android-build-tools
+        mkdir -p $HOME/tools
+        cd $HOME/tools
         curl -L -o bt.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
-        unzip bt.zip
+        unzip bt.zip >/dev/null
 
-        echo "Extracted folders:"
-        ls -R .
-
-        # Find zipalign automatically
-        ZIPALIGN_PATH=$(find $HOME/android-build-tools -type f -name zipalign | head -n 1)
-        ZIPALIGN_DIR=$(dirname "$ZIPALIGN_PATH")
-
-        echo "zipalign found at: $ZIPALIGN_PATH"
-        echo "Adding to PATH: $ZIPALIGN_DIR"
-
-        # Add to PATH for next steps
-        echo "$ZIPALIGN_DIR" >> $GITHUB_PATH
+        ZIPALIGN_PATH=$(find . -type f -name zipalign | head -n1)
+        echo "Adding zipalign to PATH: $ZIPALIGN_PATH"
+        echo "$(dirname $ZIPALIGN_PATH)" >> $GITHUB_PATH
 
     - name: Clone Patcher Repo
       run: |
-        git clone https://github.com/Danda420/OemPorts10T-PIF
+        git clone https://github.com/aliakbar6821/OemPorts10T-PIF
 
     - name: Download framework.jar
       run: |
         cd OemPorts10T-PIF/framework_patcher
         curl -L -o framework.jar "https://pixeldrain.com/u/J5SEVhfY"
 
-    - name: Run Framework Patcher and Save output.txt
+    - name: Run Framework Patcher
       run: |
         cd OemPorts10T-PIF/framework_patcher
-
         chmod +x patchframework.sh
         ./patchframework.sh | tee output.txt
 
-        if [ -f for.sh ]; then
-          chmod +x for.sh
-          ./for.sh | tee -a output.txt
-        fi
-
-    - name: Create ZIP of patcher
+    - name: Zip Framework Patcher Folder
       run: |
         cd OemPorts10T-PIF
         zip -r framework.zip framework_patcher
 
-    - name: Upload ZIP to Pixeldrain
+    - name: Upload to PixelDrain
       run: |
         cd OemPorts10T-PIF
-        curl -T "framework.zip" -u :870d0ec5-6f6e-486d-9a3a-1707d803248f https://pixeldrain.com/api/file/
+        curl -T framework.zip -u :870d0ec5-6f6e-486d-9a3a-1707d803248f https://pixeldrain.com/api/file/
