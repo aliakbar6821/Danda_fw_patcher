@@ -18,6 +18,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
 
+        # Install Android Build-Tools 33
+        sudo mkdir -p /usr/lib/android-sdk
+        cd /usr/lib/android-sdk
+        sudo curl -L -o build-tools.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
+        sudo unzip build-tools.zip -d build-tools
+        sudo mv build-tools /usr/lib/android-sdk/build-tools-33
+        sudo ln -s /usr/lib/android-sdk/build-tools-33/zipalign /usr/local/bin/zipalign
+        sudo ln -s /usr/lib/android-sdk/build-tools-33/apksigner /usr/local/bin/apksigner
+
     - name: Clone Patcher Repo
       run: |
         git clone https://github.com/Danda420/OemPorts10T-PIF
