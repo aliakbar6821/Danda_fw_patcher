@@ -9,24 +9,31 @@ jobs:
 
     steps:
 
-    - name: Install Required Packages
+        - name: Install Required Packages
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-17-jre android-sdk-libsparse-utils android-sdk-platform-tools zip unzip curl
 
-        # Install Android Build-Tools (includes zipalign & apksigner)
+        # Install Android Build-Tools
         mkdir -p $HOME/android-build-tools
         cd $HOME/android-build-tools
         curl -L -o bt.zip https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip
         unzip bt.zip
 
-        # Add zipalign + apksigner to PATH permanently for this job
-        echo "$HOME/android-build-tools/android-13/build-tools/33.0.2" >> $GITHUB_PATH
+        # DEBUG LIST – see extracted structure
+        echo "Extracted folders:"
+        ls -R .
 
-    - name: Verify zipalign
-      run: |
-        which zipalign
-        zipalign -h
+        # Find the actual zipalign path automatically
+        ZIPALIGN_PATH=$(find $HOME/android-build-tools -type f -name zipalign | head -n 1)
+        ZIPALIGN_DIR=$(dirname "$ZIPALIGN_PATH")
+
+        echo "zipalign found at: $ZIPALIGN_PATH"
+        echo "Adding to PATH: $ZIPALIGN_DIR"
+
+        # Add to PATH for all next steps
+        echo "$ZIPALIGN_DIR" >> $GITHUB_PATH
+
 
     - name: Clone Patcher Repo
       run: |
